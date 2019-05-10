@@ -1,3 +1,28 @@
-from django.db import models
+from uuid import uuid4
 
-# Create your models here.
+from django.db.models.signals import post_save, pre_save, pre_delete, post_delete
+from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
+from django.db import models
+from django.contrib.contenttypes.fields import GenericForeignKey, GenericRelation
+from django.contrib.contenttypes.models import ContentType
+from django.utils import timezone
+
+from apps.misc.logger import *
+from apps.movies.models import *
+
+# +++++++++++++++++++++++++++++++++++
+logger = logging.getLogger(__name__)
+logger.addHandler(handler)
+# +++++++++++++++++++++++++++++++++++
+
+class CommentModel(models.Model):
+    movie = models.ForeignKey(
+        MovieModel,
+        on_delete=models.CASCADE,
+        null=True
+    )
+
+    content = models.TextField(
+        max_length=500,
+        default=''
+    )
