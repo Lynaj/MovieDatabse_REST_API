@@ -60,6 +60,7 @@ MIDDLEWARE = [
 # ------------------------------------------------------------------------------
 DEBUG = env.bool('DEBUG')
 SECRET_KEY = env.str('SECRET_KEY')
+OMDBAPI_KEY = env.str('OMDBAPI_KEY')
 
 # DOMAINS
 ALLOWED_HOSTS = env.list('ALLOWED_HOSTS', default=['*'])
@@ -275,7 +276,7 @@ RAVEN_CONFIG = {
 
 
 GOOGLE_INVISIBLE_RECAPTCHA_SECRET_KEY = ""
-
+CAPTCHA_TEST_MODE = True
 
 # CORS
 CORS_ORIGIN_ALLOW_ALL = True
@@ -294,3 +295,13 @@ JWT_AUTH = {
     'JWT_EXPIRATION_DELTA': timedelta(hours=10),
     'JWT_REFRESH_EXPIRATION_DELTA': timedelta(days=7),
 }
+
+
+# CELERY
+BROKER_URL = 'redis://redis:6379/0'
+CELERY_RESULT_BACKEND = 'redis://redis:6379/0'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = 'Europe/Warsaw'
+SESSION_SAVE_EVERY_REQUEST=True

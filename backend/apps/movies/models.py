@@ -51,8 +51,9 @@ class MovieModel(models.Model):
     title = models.CharField(
         verbose_name="Umiejętności Oferty",
         max_length=200,
-        null=True,
-        blank=True
+        null=False,
+        blank=False,
+        unique=True
     )
 
     year = models.IntegerField(
