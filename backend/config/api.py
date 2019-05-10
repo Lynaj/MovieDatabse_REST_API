@@ -8,5 +8,5 @@ api = routers.DefaultRouter()
 api.trailing_slash = '/?'
 
 # Users API
-api.register(r'movies', MovieViewSet, base_name="Movies View")
-api.register(r'comments', CommentViewSet, base_name="Comments View")
+api.register(r'movies', MovieViewSet, base_name="movies")
+api.register(r'comments', CommentViewSet, base_name="comments")
