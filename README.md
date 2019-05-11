@@ -25,5 +25,5 @@ $ docker-compose up
 The app is available at: 
 
 ```
-http://localhost:8000/api/v1
+http://localhost:8000/
 ```

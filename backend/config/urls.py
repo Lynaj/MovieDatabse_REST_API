@@ -21,7 +21,7 @@ urlpatterns = [
     url(r'^top/', TopRatedMovies.as_view(), name='api-top-rated-movies'),
     url(r'^movies/', MovieModelAPIView.as_view(), name="movies"),
 
-    path('api/v1/', include((api.urls, 'api')))
+    path('', include((api.urls, 'api')))
 ]
 
 # python manage.py test apps
