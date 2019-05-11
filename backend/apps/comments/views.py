@@ -22,7 +22,7 @@ logger.addHandler(handler)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
-    permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
+    permission_classes = (permissions.AllowAny,)
     parser_classes = (JSONParser,)
     serializer_class = CommentModelExtendedSerializer
     lookup_field = 'id'
