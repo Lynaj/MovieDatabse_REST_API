@@ -19,7 +19,8 @@ class CommentModel(models.Model):
     movie = models.ForeignKey(
         MovieModel,
         on_delete=models.CASCADE,
-        null=True
+        null=True,
+        related_name="commented_movies"
     )
 
     content = models.TextField(
