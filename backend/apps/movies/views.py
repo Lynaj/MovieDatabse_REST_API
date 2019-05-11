@@ -46,10 +46,5 @@ class MovieModelAPIView(APIView):
                 )
 
         except Exception as e:
-            logger.error(
-                "Something unexpected happened when in: MovieModelAPIView-post:"
-                + '\n'
-                + str(e)
-            )
-
+            pass
         return Response(status=status.HTTP_404_NOT_FOUND)

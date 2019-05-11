@@ -133,9 +133,6 @@ class CommentViewSetTestCase(APITestCase):
             }
         ))
 
-        logger.error(
-            str(resp.data)
-        )
 
         self.assertEqual(
             resp.status_code, status.HTTP_200_OK
@@ -170,80 +167,47 @@ class CommentViewSetTestCase(APITestCase):
             resp.status_code, status.HTTP_404_NOT_FOUND
         )
 
-# class TopRatedtViewSetTestCase(APITestCase):
-#
-#
-#     def setUp(self):
-#         self.client = Client()
-#         # Prepating movie's model data
-#         self.url = reverse("api-top-rated-movies")
-#         self.test_Title = "Guardians of the Galaxy Vol. 2"
-#         self.test_Year = "2017"
-#         self.test_Rated = "PG-13"
-#         self.test_Released = datetime.datetime.strptime(
-#             "05 May 2017"
-#             ,
-#             "%d %b %Y"
-#         )
-#         self.test_Runtime = "136 min"
-#         self.test_Genre = "Action, Adventure, Comedy, Sci-Fi"
-#         self.test_Director = "James Gunn"
-#         self.test_Writer = "James Gunn, Dan Abnett"
-#         self.test_Country = "USA"
-#         self.test_Awards = "Nominated for 1 Oscar. Another 12 wins & 42 nominations."
-#         self.test_Poster = "https://m.media-amazon.com/images/M/MV5BMTg2MzI1MTg3OF5BMl5BanBnXkFtZTgwNTU3NDA2MTI@._V1_SX300.jpg"
-#         self.test_imdbRating = "7.7"
-#         self.test_imdbVotes = "471,312".replace(",", ".")
-#         self.test_imdbID = "tt3896198"
-#         self.test_Type = "movie"
-#         self.test_DVD = datetime.datetime.strptime(
-#             "22 Aug 2017"
-#             ,
-#             "%d %b %Y"
-#         )
-#         self.test_Metascore = "67"
-#         self.test_BoxOffice = "$389,804,217"
-#         self.test_Production = "Walt Disney Pictures"
-#         self.test_Website = "https://marvel.com/guardians"
-#         self.test_Response = True
-#         self.number_of_created_comments = 5
-#         # Creating basic data movie data model
-#         created__movie_model = MovieModel.objects.create(
-#             title=self.test_Title,
-#             year=self.test_Year,
-#             rated=self.test_Rated,
-#             released=self.test_Released,
-#             runtime=self.test_Runtime,
-#             genre=self.test_Genre,
-#             director=self.test_Director,
-#             writer=self.test_Writer,
-#             country=self.test_Country,
-#             awards=self.test_Awards,
-#             poster=self.test_Poster,
-#             metascore=self.test_Metascore,
-#             imdb_rating=self.test_imdbRating,
-#             imdb_votes=self.test_imdbVotes,
-#             imbd_id=self.test_imdbID,
-#             type=self.test_Type,
-#             dvd=self.test_DVD,
-#             box_office=self.test_BoxOffice,
-#             production=self.test_Production,
-#             website=self.test_Website,
-#             response=self.test_Response
-#         )
-#
-#         self.test_content = "Test Content"
-#
-#         # Creating comments
-#         self.list_of_comments = []
-#
-#         for x in range(self.number_of_created_comments):
-#             self.list_of_comments.append(
-#                 CommentModel.objects.create(
-#                     movie=created__movie_model,
-#                     content=self.test_content+str(x)
-#                 )
-#             )
+
+class TopRatedMoviesTestCase(APITestCase):
+
+    def setUp(self):
+        self.test_content = "Test Content"
+        self.list_of_comments = []
+        self.client = Client()
+        self.url = reverse("api:comments-list")
+        # Prepating movie's model data
+        self.test_Title = "Guardians of the Galaxy Vol. 2"
+        self.test_Year = "2017"
+        self.test_Rated = "PG-13"
+        self.test_Released = datetime.datetime.strptime(
+            "05 May 2017"
+            ,
+            "%d %b %Y"
+        )
+        self.test_Runtime = "136 min"
+        self.test_Genre = "Action, Adventure, Comedy, Sci-Fi"
+        self.test_Director = "James Gunn"
+        self.test_Writer = "James Gunn, Dan Abnett"
+        self.test_Country = "USA"
+        self.test_Awards = "Nominated for 1 Oscar. Another 12 wins & 42 nominations."
+        self.test_Poster = "https://m.media-amazon.com/images/M/MV5BMTg2MzI1MTg3OF5BMl5BanBnXkFtZTgwNTU3NDA2MTI@._V1_SX300.jpg"
+        self.test_imdbRating = "7.7"
+        self.test_imdbVotes = "471,312".replace(",", ".")
+        self.test_imdbID = "tt3896198"
+        self.test_Type = "movie"
+        self.test_DVD = datetime.datetime.strptime(
+            "22 Aug 2017"
+            ,
+            "%d %b %Y"
+        )
+        self.test_Metascore = "67"
+        self.test_BoxOffice = "$389,804,217"
+        self.test_Production = "Walt Disney Pictures"
+        self.test_Website = "https://marvel.com/guardians"
+        self.test_Response = True
+        self.number_of_created_comments = 5
+        # Creating basic data movie data model
+
 
     def test_lack_of_movies_in_the_database(self):
         CommentModel.objects.all().delete()
@@ -289,17 +253,10 @@ class CommentViewSetTestCase(APITestCase):
         self.assertEqual(
             resp.status_code, status.HTTP_200_OK
         )
-
-        self.assertTrue(
-            'results' in resp.data
-        )
-
-        self.results = resp.data['results']
-
         # Validating number of records
         self.assertEqual(
             len(
-                self.results
+                resp.data
             ),
             number_of_movies
         )
@@ -309,7 +266,7 @@ class CommentViewSetTestCase(APITestCase):
             as well, as value of the rank & movie_id
         '''
         list_of_movie_models_ID = list(map(lambda x: x.id, MovieModel.objects.all()))
-        for movie in self.results:
+        for movie in resp.data:
             self.assertEqual(
                 str(
                     movie["rank"]
@@ -325,7 +282,7 @@ class CommentViewSetTestCase(APITestCase):
                 str(
                     movie["total_comments"]
                 ),
-                number_of_comments_linked_to_each_movie
+                str(number_of_comments_linked_to_each_movie)
             )
 
     def test_five_movies_each_having_zero_comments(self):
@@ -352,16 +309,11 @@ class CommentViewSetTestCase(APITestCase):
             resp.status_code, status.HTTP_200_OK
         )
 
-        self.assertTrue(
-            'results' in resp.data
-        )
-
-        self.results = resp.data['results']
 
         # Validating number of records
         self.assertEqual(
             len(
-                self.results
+                resp.data
             ),
             number_of_movies
         )
@@ -371,7 +323,7 @@ class CommentViewSetTestCase(APITestCase):
             as well, as value of the rank & movie_id
         '''
         list_of_movie_models_ID = list(map(lambda x: x.id, MovieModel.objects.all()))
-        for movie in self.results:
+        for movie in resp.data:
             self.assertEqual(
                 str(
                     movie["rank"]
@@ -387,12 +339,12 @@ class CommentViewSetTestCase(APITestCase):
                 str(
                     movie["total_comments"]
                 ),
-                number_of_comments_linked_to_each_movie
+                str(number_of_comments_linked_to_each_movie)
             )
 
     def test_five_movies_different_number_of_comments(self):
-        number_of_movies = 15
-        number_of_comments_linked_to_each_movie__array = [x for x in range(15)]
+        number_of_movies = 5
+        number_of_comments_linked_to_each_movie__array = [x for x in range(5)]
         # Creating MovieModels
         for x in range(number_of_movies):
             created_movie = MovieModel.objects.create(
@@ -402,7 +354,7 @@ class CommentViewSetTestCase(APITestCase):
             for y in range(number_of_comments_linked_to_each_movie__array[x]):
                 CommentModel.objects.create(
                     movie=created_movie,
-                    content=self.test_content
+                    content=self.test_content + str(y)
                 )
 
         # Calling Endpoint containg list of most popular movies
@@ -414,16 +366,10 @@ class CommentViewSetTestCase(APITestCase):
             resp.status_code, status.HTTP_200_OK
         )
 
-        self.assertTrue(
-            'results' in resp.data
-        )
-
-        self.results = resp.data['results']
-
         # Validating number of records
         self.assertEqual(
             len(
-                self.results
+                resp.data
             ),
             number_of_movies
         )
@@ -433,7 +379,8 @@ class CommentViewSetTestCase(APITestCase):
             as well, as value of the rank & movie_id
         '''
         list_of_movie_models_ID = list(map(lambda x: x.id, MovieModel.objects.all()))
-        for (index, movie) in enumerate(self.results):
+
+        for (index, movie) in enumerate(resp.data):
             self.assertEqual(
                 str(
                     movie["rank"]
@@ -449,5 +396,84 @@ class CommentViewSetTestCase(APITestCase):
                 str(
                     movie["total_comments"]
                 ),
-                number_of_comments_linked_to_each_movie__array[index]
+                str(number_of_comments_linked_to_each_movie__array[index])
             )
+
+    def test_five_movies_different_number_of_comments_date_limit(self):
+
+        number_of_movies = 5
+        number_of_comments_linked_to_each_movie__array = [x for x in range(5)]
+        # Creating MovieModels
+        for x in range(number_of_movies):
+            created_movie = MovieModel.objects.create(
+                title=self.test_Title + str(x)
+            )
+
+            for y in range(number_of_comments_linked_to_each_movie__array[x]):
+                CommentModel.objects.create(
+                    movie=created_movie,
+                    content=self.test_content + str(y),
+                )
+            # Creating only one valid CommentModel
+            valid_comment = CommentModel.objects.create(
+                movie=created_movie,
+                content=self.test_content
+            )
+
+            valid_comment.created_at=datetime.datetime.strptime(
+                '02 Feb 2010',
+                "%d %b %Y"
+            )
+
+            valid_comment.save()
+
+
+        # Calling Endpoint containg list of most popular movies
+        resp = self.client.get(
+            reverse("api-top-rated-movies") + (
+                "?START_DATE=02 Jan 2010"
+                +
+                "&END_DATE=05 Dec 2011"
+
+            )
+        )
+
+        self.assertEqual(
+            resp.status_code, status.HTTP_200_OK
+        )
+
+
+        # Validating number of records
+        self.assertEqual(
+            len(
+                resp.data
+            ),
+            number_of_movies
+        )
+
+        '''
+            Validating number of comments
+            as well, as value of the rank & movie_id
+        '''
+        list_of_movie_models_ID = list(map(lambda x: x.id, MovieModel.objects.all()))
+
+        for (index, movie) in enumerate(resp.data):
+            self.assertEqual(
+                str(
+                    movie["rank"]
+                ),
+                "0"
+            )
+
+            self.assertTrue(
+                movie["movie_id"] in list_of_movie_models_ID,
+            )
+
+            self.assertEqual(
+                str(
+                    movie["total_comments"]
+                ),
+                "1"
+            )
+
+
