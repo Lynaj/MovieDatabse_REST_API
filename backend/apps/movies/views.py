@@ -1,20 +1,17 @@
+from django.conf import settings
 from django.shortcuts import render
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import authentication, permissions
 from django.contrib.auth.models import User
 from apps.movies.tasks import *
+from apps.movies.serializers import *
+from apps.movies.models import *
+from rest_framework import viewsets, status
 
 
 class MovieModelAPIView(APIView):
-    """
-    View to list Movies stored in the DB
-    as well as to fetch information about a new one
-    """
-    authentication_classes = ()
-    permission_classes = (
-        permissions.AllowAny,
-    )
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request, format=None):
         """
@@ -34,7 +31,6 @@ class MovieModelAPIView(APIView):
         given movie ( basing on Title )
         """
         try:
-
             if ('title' in request.POST):
                 data = processMovieObject(
                     request.POST.get(
@@ -42,9 +38,12 @@ class MovieModelAPIView(APIView):
                         ''
                     )
                 )
-
-            else:
-                data = MovieModel.objects.none()
+                return Response(
+                    MovieModelSerializer(
+                        data,
+                        many=False
+                    ).data
+                )
 
         except Exception as e:
             logger.error(
@@ -53,11 +52,4 @@ class MovieModelAPIView(APIView):
                 + str(e)
             )
 
-            data = MovieModel.objects.none()
-
-        return Response(
-            MovieModelSerializer(
-                data,
-                many=False
-            )
-        )
+        return Response(status=status.HTTP_404_NOT_FOUND)

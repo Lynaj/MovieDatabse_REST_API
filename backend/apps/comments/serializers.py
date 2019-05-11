@@ -15,7 +15,6 @@ class CommentModelExtendedSerializer(serializers.ModelSerializer):
         ]
 
     def get_movie(self, queriedObject):
-        movie_id = queriedObject.movie.id
+        movie_id = queriedObject.id
         return movie_id
-
 

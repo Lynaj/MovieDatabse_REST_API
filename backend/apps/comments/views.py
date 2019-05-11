@@ -1,3 +1,4 @@
+from django.conf import settings
 from rest_framework_jwt.serializers import VerifyJSONWebTokenSerializer
 from rest_framework import permissions
 from rest_framework import viewsets, status
@@ -23,9 +24,11 @@ logger.addHandler(handler)
 class CommentViewSet(viewsets.ModelViewSet):
     permission_classes = (permissions.IsAuthenticatedOrReadOnly,)
     parser_classes = (JSONParser,)
+    serializer_class = CommentModelExtendedSerializer
+    lookup_field = 'id'
 
     def get_queryset(self):
-        queryset = MovieModel.objects.all()
+        queryset = CommentModel.objects.all()
         movieId = self.request.query_params.get('ID', None)
 
         if movieId is not None:
@@ -41,10 +44,7 @@ class TopRatedMovies(APIView):
     View to list movies with the biggest amount of
     linked comments
     """
-    authentication_classes = ()
-    permission_classes = (
-        permissions.AllowAny,
-    )
+    permission_classes = (permissions.AllowAny,)
 
     def get(self, request, format=None):
         '''
@@ -54,40 +54,38 @@ class TopRatedMovies(APIView):
 
         START_DATE = request.POST.get(
             'START_DATE',
-            '01/01/1990'
+            '01 Jan 1990'
         )
 
         END_DATE = request.POST.get(
             'END_DATE',
-            '01/01/2999'
+            '01 Jan 2999'
         )
 
         if(START_DATE != None
             and END_DATE != None):
 
+
+            # "%d %b %Y"
+            # "%m/%d/%Y"
+            # YYYY - MM - DD
+
             START_DATE = datetime.datetime.strptime(
                 START_DATE
                 ,
-                "%m/%d/%y"
+                "%d %b %Y"
             )
 
             END_DATE  = datetime.datetime.strptime(
                 END_DATE
                 ,
-                "%m/%d/%y"
-            )
-
-        queriedObjects = []
-        for obj in MovieModel.objects.all():
-            obj['comments'] = obj.commented_movies.all().count()
-            queriedObjects.append(
-                obj
+                "%d %b %Y"
             )
 
         sortedList = []
 
         # making a simple sorting DO IT WITH YELD !!
-        for queriedObject in queriedObjects:
+        for queriedObject in MovieModel.objects.all():
 
             if(
                 len(
@@ -98,37 +96,36 @@ class TopRatedMovies(APIView):
                 flag = False
                 for idx, val in enumerate(sortedList):
 
-                    if(el['comments'] == queried['comments']):
+                    if(el.commented_movies.all().count() == queriedObject.commented_movies.all().count()):
                         sortedList.insert(
                             idx,
                             {
-                                "movie_id": queried['id'],
-                                "total_comments": queried['comments'],
+                                "movie_id": queriedObject['id'],
+                                "total_comments": queriedObject.commented_movies.all().count(),
                                 "rank": el['rank']
                             }
                         )
                         break
 
-                    elif(el['comments'] < queried['comments']):
+                    elif(el.commented_movies.all().count() < queriedObject.commented_movies.all().count()):
                         continue
                     else:
                         idx = idx > 0 and idx or 0
                         sortedList.insert(
                             idx,
                             {
-                                "movie_id": queried['id'],
-                                "total_comments": queried['comments'],
+                                "movie_id": queriedObject.id,
+                                "total_comments": queriedObject.commented_movies.all().count(),
                                 "rank": el['rank']
                             }
                         )
 
             else:
 
-                sortedList.insert(
-                    idx,
+                sortedList.append(
                     {
-                        "movie_id": queried['id'],
-                        "total_comments": queried['comments'],
+                        "movie_id": queriedObject.id,
+                        "total_comments": queriedObject.commented_movies.all().count(),
                         "rank": 0
                     }
                 )
@@ -143,41 +140,3 @@ class TopRatedMovies(APIView):
         )
 
         return Response(serializer.data)
-
-
-
-
-
-    def post(self, request, format=None):
-        """
-        Fetches data connected with
-        given movie ( basing on Title )
-        """
-        try:
-
-            if('title' in request.POST):
-                data = processMovieObject(
-                    request.POST.get(
-                        'title',
-                        ''
-                    )
-                )
-
-            else:
-                data = MovieModel.objects.none()
-
-        except Exception as e:
-            logger.error(
-                "Something unexpected happened when in: MovieModelAPIView-post:"
-                + '\n'
-                + str(e)
-            )
-
-            data = MovieModel.objects.none()
-
-        return Response(
-            MovieModelSerializer(
-                data,
-                many=False
-            )
-        )

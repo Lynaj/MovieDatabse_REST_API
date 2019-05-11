@@ -94,7 +94,7 @@ class MovieModel(models.Model):
     )
 
     writer = models.CharField(
-        max_length=200,
+        max_length=500,
         null=True,
         blank=True
     )

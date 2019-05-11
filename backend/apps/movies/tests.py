@@ -2,39 +2,62 @@ import json
 from django.contrib.auth.models import User
 from django.urls import reverse
 
+from django.conf import settings
+
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase
 from apps.movies.models import *
 from apps.movies.serializers import *
 
+from django.test import Client
+from rest_framework import viewsets, status
+
+from apps.misc.logger import *
+from django.db.models import Q
+import datetime
+
+logger = logging.getLogger(__name__)
+logger.addHandler(handler)
+
+
+import datetime
 import json
 import os
 import codecs
 
 class CompanyViewSetTestCase(APITestCase):
-    url_get = reverse("api:movies-get")
-    url_list = reverse("api:movies-list")
-    url_post = reverse("api:movies-post")
+    url_list = reverse("movies")
+
 
     def setUp(self):
+        # Prepating movie's model data
+        self.client = Client()
+        self.url = reverse("api:comments-list")
         # Prepating movie's model data
         self.test_Title = "Guardians of the Galaxy Vol. 2"
         self.test_Year = "2017"
         self.test_Rated = "PG-13"
-        self.test_Released = "05 May 2017"
+        self.test_Released = datetime.datetime.strptime(
+            "05 May 2017"
+            ,
+            "%d %b %Y"
+        )
         self.test_Runtime = "136 min"
         self.test_Genre = "Action, Adventure, Comedy, Sci-Fi"
         self.test_Director = "James Gunn"
-        self.test_Writer = "James Gunn, Dan Abnett (based on the Marvel comics by), Andy Lanning (based on the Marvel comics by), Steve Englehart (Star-Lord created by), Steve Gan (Star-Lord created by), Jim Starlin (Gamora and Drax created by), Stan Lee (Groot created by), Larry Lieber (Groot created by), Jack Kirby (Groot created by), Bill Mantlo (Rocket Raccoon created by), Keith Giffen (Rocket Raccoon created by), Steve Gerber (Howard the Duck created by), Val Mayerik (Howard the Duck created by)"
-        self.test_Plot = "The Guardians struggle to keep together as a team while dealing with their personal family issues, notably Star-Lord's encounter with his father the ambitious celestial being Ego."
+        self.test_Writer = "James Gunn, Dan Abnett"
         self.test_Country = "USA"
         self.test_Awards = "Nominated for 1 Oscar. Another 12 wins & 42 nominations."
         self.test_Poster = "https://m.media-amazon.com/images/M/MV5BMTg2MzI1MTg3OF5BMl5BanBnXkFtZTgwNTU3NDA2MTI@._V1_SX300.jpg"
         self.test_imdbRating = "7.7"
-        self.test_imdbVotes = "471,312"
+        self.test_imdbVotes = "471,312".replace(",", ".")
         self.test_imdbID = "tt3896198"
         self.test_Type = "movie"
-        self.test_DVD = "22 Aug 2017"
+        self.test_DVD = datetime.datetime.strptime(
+            "22 Aug 2017"
+            ,
+            "%d %b %Y"
+        )
         self.test_Metascore = "67"
         self.test_BoxOffice = "$389,804,217"
         self.test_Production = "Walt Disney Pictures"
@@ -42,52 +65,50 @@ class CompanyViewSetTestCase(APITestCase):
         self.test_Response = True
 
         # Setting up basic variables
-        test_rating_model__source = "Rotten Tomatoes"
-        test_rating_model__value = "89%"
+        self.test_rating_model__source = "Rotten Tomatoes"
+        self.test_rating_model__value = "89%"
 
-        test_language_model__name = "English"
-        test_second_language_model__name= "Swedish"
+        self.test_language_model__name = "English"
+        self.test_second_language_model__name= "Swedish"
 
-        test_actor_model__first_name = "Leonardo"
-        test_actor_model__last_name = "DiCaprio"
+        self.test_actor_model__first_name = "Leonardo"
+        self.test_actor_model__last_name = "DiCaprio"
 
         # Prepeparing languages, actors & ratings
         created__rating_model = RatingModel.objects.create(
-            source=test_rating_model__source,
-            value=test_rating_model__value
+            source=self.test_rating_model__source,
+            value=self.test_rating_model__value
         )
 
         created__language_model = LanguageModel.objects.create(
-            name=test_language_model__name
+            name=self.test_language_model__name
         )
         created__second_language_model = LanguageModel.objects.create(
-            name=test_second_language_model__name
+            name=self.test_second_language_model__name
         )
 
         created__actor_model = ActorModel.objects.create(
-            first_name=test_actor_model__first_name,
-            last_name=test_actor_model__last_name
+            first_name=self.test_actor_model__first_name,
+            last_name=self.test_actor_model__last_name
         )
 
-    def test_list_all_movies_registered_in_the_database(self):
-        
         # Prepeparing languages, actors & ratings
         self.created__rating_model = RatingModel.objects.create(
-            source=test_rating_model__source,
-            value=test_rating_model__value
+            source=self.test_rating_model__source,
+            value=self.test_rating_model__value
         )
 
         self.created__language_model = LanguageModel.objects.create(
-            name=test_language_model__name
+            name=self.test_language_model__name
         )
 
         self.created__second_language_model = LanguageModel.objects.create(
-            name=test_second_language_model__name
+            name=self.test_second_language_model__name
         )
 
         self.created__actor_model = ActorModel.objects.create(
-            first_name=test_actor_model__first_name,
-            last_name=test_actor_model__last_name
+            first_name=self.test_actor_model__first_name,
+            last_name=self.test_actor_model__last_name
         )
 
         # Creating basic data movie data model
@@ -100,7 +121,6 @@ class CompanyViewSetTestCase(APITestCase):
             genre=self.test_Genre,
             director=self.test_Director,
             writer=self.test_Writer,
-            plot=self.test_Plot,
             country=self.test_Country,
             awards=self.test_Awards,
             poster=self.test_Poster,
@@ -116,123 +136,94 @@ class CompanyViewSetTestCase(APITestCase):
             response=self.test_Response
         )
 
+    def test_list_all_movies_registered_in_the_database(self):
+
+
+
         # Calling Endpoint containg list of Movies ( potentially )
         resp = self.client.get(
-            url_get
+            "/movies/"
         )
 
         self.assertEqual(
             resp.status_code, status.HTTP_200_OK
         )
 
-        self.assertTrue(
-            'results' in resp.data
-        )
-
-        self.results = resp.data['results']
-
-        # Validating number of records 
-        self.assertEqual(
-            len(
-                results
-            ), 
-            1   
-        )
 
         # Validating record data
         self.assertEqual(
-            self.results["title"]
-            , 
+            resp.data[0]["title"]
+            ,
             self.test_Title
         )
 
         self.assertEqual(
-            self.results["year"]
-            , 
-            self.test_Year
+            str(resp.data[0]["year"])
+            ,
+            str(self.test_Year)
         )
 
     def test_fetch_movie_information_using_external_api_correct_title(self):
         # Preparing mock data
         test_mockResponse = {"Title":"Titanic","Year":"1997","Rated":"PG-13","Released":"19 Dec 1997","Runtime":"194 min","Genre":"Drama, Romance","Director":"James Cameron","Writer":"James Cameron","Actors":"Leonardo DiCaprio, Kate Winslet, Billy Zane, Kathy Bates","Plot":"A seventeen-year-old aristocrat falls in love with a kind but poor artist aboard the luxurious, ill-fated R.M.S. Titanic.","Language":"English, Swedish, Italian","Country":"USA","Awards":"Won 11 Oscars. Another 111 wins & 77 nominations.","Poster":"https://m.media-amazon.com/images/M/MV5BMDdmZGU3NDQtY2E5My00ZTliLWIzOTUtMTY4ZGI1YjdiNjk3XkEyXkFqcGdeQXVyNTA4NzY1MzY@._V1_SX300.jpg","Ratings":[{"Source":"Internet Movie Database","Value":"7.8/10"},{"Source":"Rotten Tomatoes","Value":"89%"},{"Source":"Metacritic","Value":"75/100"}],"Metascore":"75","imdbRating":"7.8","imdbVotes":"946,032","imdbID":"tt0120338","Type":"movie","DVD":"10 Sep 2012","BoxOffice":"N/A","Production":"Paramount Pictures","Website":"http://www.titanicmovie.com/","Response":"True"}
 
-        '''
+        self.assertEqual(
+            MovieModel.objects.all().count(),
+            1
+        )
+        ''' 
         Invoking the main method responsible for
         fetching the information from external API
         with the usage of POST request
         '''
 
+        test_payload = {
+            "title": test_mockResponse["Title"]
+        }
+
         resp = self.client.post(
-            url_post, 
-            {
-                'title': test_mockResponse["Title"], 
-            },
+            "/movies/",
+            data=test_payload,
             format='json'
         )
 
+        self.assertTrue(
+            resp.data['title'],
+            test_mockResponse["Title"]
+        )
+
+
         self.assertEqual(
-            resp.status_code, 
+            resp.status_code,
             status.HTTP_200_OK
         )
 
         '''
-        Validating, whether the entire procedure of 
-        receiving the data has been realized in 
+        Validating, whether the entire procedure of
+        receiving the data has been realized in
         an expected way or not
         '''
 
         # Calling Endpoint containg list of Movies ( potentially )
         resp = self.client.get(
-            url_get
+            "/movies/"
         )
 
         self.assertEqual(
             resp.status_code, status.HTTP_200_OK
         )
 
+
         self.assertTrue(
-            'results' in resp.data
-        )
-
-        self.results = resp.data['results']
-
-        # Validating number of records 
-        self.assertEqual(
-            len(
-                results
-            ), 
-            2   
-        )
-
-        # Filtering second movie's data
-        queried_second_movie = list(
-            filter(
-                lambda x: x['title'] == test_mockResponse["Title"]
-                ,
-                results
-            )
-        )
-
-        # Validating record data
-        self.assertEqual(
-            len(
-                queried_second_movie
-            )
-            , 
-            1
+            resp.data[0]['title'],
+            test_mockResponse["Title"]
         )
 
         self.assertEqual(
-            self.results["year"]
-            ,
-            test_mockResponse["Year"]
+            MovieModel.objects.all().count(),
+            2
         )
 
-        self.assertEqual(
-            self.results["Rated"]
-            ,
-            test_mockResponse["Rated"]
-        )
 
 
     def test_fetch_movie_information_using_external_api_wrong_title(self):
@@ -245,62 +236,37 @@ class CompanyViewSetTestCase(APITestCase):
         with the usage of POST request
         '''
 
+        test_payload = {
+            "title": format(test_wrongTitleData)
+        }
+
         resp = self.client.post(
-            url_post, 
-            {
-                'title': test_mockResponse["Title"], 
-            },
+            "/movies/",
+            data=test_payload,
             format='json'
         )
 
         self.assertEqual(
-            resp.status_code, 
+            resp.status_code,
             status.HTTP_404_NOT_FOUND
         )
 
         '''
-        Validating, whether the entire procedure of 
-        receiving the data has been realized in 
+        Validating, whether the entire procedure of
+        receiving the data has been realized in
         an expected way or not
         '''
 
         # Calling Endpoint containg list of Movies ( potentially )
         resp = self.client.get(
-            url_get
+            "/movies/"
         )
 
         self.assertEqual(
             resp.status_code, status.HTTP_200_OK
         )
 
-        self.assertTrue(
-            'results' in resp.data
-        )
-
-        self.results = resp.data['results']
-
-        # Validating number of records 
         self.assertEqual(
-            len(
-                results
-            ), 
-            1 
-        )
-
-        # Filtering second movie's data
-        queried_second_movie = list(
-            filter(
-                lambda x: x['title'] == test_wrongTitleData
-                ,
-                results
-            )
-        )
-
-        # Validating record data
-        self.assertEqual(
-            len(
-                queried_second_movie
-            )
-            , 
-            0
+            MovieModel.objects.all().count(),
+            1
         )

@@ -27,3 +27,8 @@ class CommentModel(models.Model):
         max_length=500,
         default=''
     )
+
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        null=False
+    )

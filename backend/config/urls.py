@@ -17,12 +17,13 @@ urlpatterns = [
     path('admin/', admin.site.urls, name='admin'),
     path('logout/', logout, {'next_page': '/'}, name='logout'),
 
-    url(r'^api/v1/auth/obtain_token/', obtain_jwt_token, name='api-jwt-auth'),
-    url(r'^api/v1/auth/verify_token/', verify_jwt_token, name='api-jwt-verify'),
-    url(r'^api/v1/auth/refresh_token/', TopRatedMovies, name='api-top-rated-movies'),
 
-    url(r'^top/', TopRatedMovies, name='api-jwt-refresh'),
-    url(r'^movies/', MovieModelAPIView, name="api-top-rated-movies"),
+    url(r'^top/', TopRatedMovies.as_view(), name='api-top-rated-movies'),
+    url(r'^movies/', MovieModelAPIView.as_view(), name="movies"),
 
     path('api/v1/', include((api.urls, 'api')))
 ]
+
+# python manage.py test apps
+
+

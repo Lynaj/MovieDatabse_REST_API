@@ -36,7 +36,6 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    'apps.users',
     'apps.movies',
     'apps.comments'
 
@@ -212,7 +211,6 @@ AUTHENTICATION_BACKENDS = [
 
 # Custom user app defaults
 # Select the correct user model
-AUTH_USER_MODEL = 'users.User'
 
 
 # DJANGO REST FRAMEWORK
