@@ -5,12 +5,13 @@ from rest_framework import authentication, permissions
 from django.contrib.auth.models import User
 from apps.movies.tasks import *
 
+
 class MovieModelAPIView(APIView):
     """
     View to list Movies stored in the DB
     as well as to fetch information about a new one
     """
-    authentication_classes = (,)
+    authentication_classes = ()
     permission_classes = (
         permissions.AllowAny,
     )
@@ -21,7 +22,7 @@ class MovieModelAPIView(APIView):
         """
 
         serializer = MovieModelSerializer(
-            MovieModel.objects.all(), 
+            MovieModel.objects.all(),
             many=True
         )
 
@@ -33,26 +34,26 @@ class MovieModelAPIView(APIView):
         given movie ( basing on Title )
         """
         try:
-        	
-        	if('title' in request.POST):
-	            data = processMovieObject(
-	                request.POST.get(
-	                    'title',
-	                    ''
-	                )
-	            )
-	            
-	        else:
-	    		data = MovieModel.objects.none()
+
+            if ('title' in request.POST):
+                data = processMovieObject(
+                    request.POST.get(
+                        'title',
+                        ''
+                    )
+                )
+
+            else:
+                data = MovieModel.objects.none()
 
         except Exception as e:
-        	logger.error(
+            logger.error(
                 "Something unexpected happened when in: MovieModelAPIView-post:"
                 + '\n'
                 + str(e)
             )
 
-        	data = MovieModel.objects.none()
+            data = MovieModel.objects.none()
 
         return Response(
             MovieModelSerializer(
