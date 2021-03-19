@@ -16,7 +16,7 @@ django-extensions==2.1.2
 django-extra-fields==0.3
 django-filter==2.1.0
 django-redis==4.9.0
-djangorestframework==3.8.2
+djangorestframework==3.11.2
 djangorestframework-filters==0.11.1
 djangorestframework-jwt==1.11.0
 filetype==1.0.5
